@@ -1,9 +1,9 @@
 {
-    "name": "mailock", 
-    "license": "MPL 2.0", 
-    "author": "", 
-    "version": "0.1", 
-    "fullName": "Mailock", 
-    "id": "jid1-hzXdmsDgwb1upw", 
-    "description": "a basic add-on"
+   "name": "mailock", 
+   "license": "MPL 2.0", 
+   "author": "Leo Gaspard <ekleog@gmail.com>", 
+   "version": "0.1", 
+   "fullName": "Mailock", 
+   "id": "mailock@TODO.org", 
+   "description": "TODO"
 }
