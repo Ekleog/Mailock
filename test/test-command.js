@@ -15,10 +15,6 @@ function mktemp(base) {
    return "/tmp/" + base + "-" + randomString();
 }
 
-function touch(filename) {
-   return "/usr/bin/touch " + filename;
-}
-
 function check(test) {
    if (file.exists("/tmp/") && file.exists("/usr/bin/touch")) {
       return true;
@@ -37,14 +33,14 @@ function checked(func) {
 
 exports.test_run = checked(function(test) {
    var filename = mktemp("test-command-run");
-   command.run(touch(filename));
+   command.run("/usr/bin/touch", filename);
    test.assert(file.exists(filename), "Command not being executed");
    file.remove(filename);
 })
 
 exports.test_runAsync = checked(function(test) {
    var filename = mktemp("test-command-runAsync");
-   command.runAsync(touch(filename), function() {
+   command.runAsync("touch", [filename], function() {
       test.assert(file.exists(filename),
                   "Command not being asynchronously executed");
       file.remove(filename);
