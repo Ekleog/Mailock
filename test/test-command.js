@@ -12,8 +12,10 @@ function randomString() {
 }
 
 function mktemp(base) {
-   // TODO: Make platform-independant tmp file generation
-   return "/tmp/" + base + "-" + randomString();
+   if (file.exists("/tmp"))
+      return "/tmp/"     + base + "-" + randomString();
+   else
+      return "C:\\tmp\\" + base + "-" + randomString();
 }
 
 function touch(filename) {
