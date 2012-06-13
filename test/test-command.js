@@ -19,6 +19,7 @@ function check(test) {
    if (file.exists("/tmp/") && file.exists("/usr/bin/touch")) {
       return true;
    } else {
+      // TODO: Make tests work on windows-like systems ?
       test.fail(
          "Can test command.js only on linux-like systems " +
          "(requires a /tmp directory and a /usr/bin/touch utility)"
