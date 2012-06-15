@@ -1,19 +1,6 @@
-const command = require("command");
-const file = require("file");
-
-function randomString() {
-   // Gracefully taken at http://stackoverflow.com/questions/1349404
-   var text = "";
-   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-   for (var i = 0; i < 5; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-   }
-   return text;
-}
-
-function mktemp(base) {
-   return "/tmp/" + base + "-" + randomString();
-}
+const command  = require("command");
+const file     = require("file");
+const mktemp   = require("mktemp").mktemp;
 
 function check(test) {
    if (file.exists("/tmp/") && file.exists("/usr/bin/touch")) {
