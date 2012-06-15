@@ -1,3 +1,0 @@
-[submodule "packages/subprocess"]
-	path = packages/subprocess
-	url = https://github.com/ochameau/jetpack-subprocess
