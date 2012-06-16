@@ -41,29 +41,53 @@ exports.test_all = checked(nogpg(function(test) {
    // Check incoming (for signed messages, I just can't encrypt to an
    // unknown key)
    var msg = "\
------BEGIN PGP SIGNED MESSAGE-----\
-Hash: SHA1\
-\
-Hello, World !\
------BEGIN PGP SIGNATURE-----\
-Version: GnuPG v2.0.19 (GNU/Linux)\
-\
-iQEcBAEBAgAGBQJP23aKAAoJEDZiG+VW2fhF9HYIAIBcB24VPoIxMp7OXZUSPcsE\
-yQfXqKjYaP4dX08r5yaC1f/pgtimEDH6Nhb7SO6FIUyRQL6kyWr+EDl0eNROojP9\
-DI79SOaRTcPh4rshuKRg0BHHEJQos8GezVwlYTGMQSfBSrtSAzOcgd2wGyDA/xc5\
-roluJIbk2s6B9CVA7yCpXKkzQe1UGNsvZKVUo1L3y/15xl6KsCfRb9StnyArzNJN\
-OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\
-4CCnjx2q+PhmWxHwmC5BS1Vanue7Acd3a25+ezjh6RRRPeiW0CCHpyhZPHlr9nc=\
-=LDtT\
------END PGP SIGNATURE-----\
+-----BEGIN PGP SIGNED MESSAGE-----\n\
+Hash: SHA1\n\
+\n\
+Hello, World !\n\
+-----BEGIN PGP SIGNATURE-----\n\
+Version: GnuPG v2.0.19 (GNU/Linux)\n\
+\n\
+iQEcBAEBAgAGBQJP23aKAAoJEDZiG+VW2fhF9HYIAIBcB24VPoIxMp7OXZUSPcsE\n\
+yQfXqKjYaP4dX08r5yaC1f/pgtimEDH6Nhb7SO6FIUyRQL6kyWr+EDl0eNROojP9\n\
+DI79SOaRTcPh4rshuKRg0BHHEJQos8GezVwlYTGMQSfBSrtSAzOcgd2wGyDA/xc5\n\
+roluJIbk2s6B9CVA7yCpXKkzQe1UGNsvZKVUo1L3y/15xl6KsCfRb9StnyArzNJN\n\
+OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
+4CCnjx2q+PhmWxHwmC5BS1Vanue7Acd3a25+ezjh6RRRPeiW0CCHpyhZPHlr9nc=\n\
+=LDtT\n\
+-----END PGP SIGNATURE-----\n\
+";
+   var tampered_msg = "\
+-----BEGIN PGP SIGNED MESSAGE-----\n\
+Hash: SHA1\n\
+\n\
+Hella, World !\n\
+-----BEGIN PGP SIGNATURE-----\n\
+Version: GnuPG v2.0.19 (GNU/Linux)\n\
+\n\
+iQEcBAEBAgAGBQJP23aKAAoJEDZiG+VW2fhF9HYIAIBcB24VPoIxMp7OXZUSPcsE\n\
+yQfXqKjYaP4dX08r5yaC1f/pgtimEDH6Nhb7SO6FIUyRQL6kyWr+EDl0eNROojP9\n\
+DI79SOaRTcPh4rshuKRg0BHHEJQos8GezVwlYTGMQSfBSrtSAzOcgd2wGyDA/xc5\n\
+roluJIbk2s6B9CVA7yCpXKkzQe1UGNsvZKVUo1L3y/15xl6KsCfRb9StnyArzNJN\n\
+OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
+4CCnjx2q+PhmWxHwmC5BS1Vanue7Acd3a25+ezjh6RRRPeiW0CCHpyhZPHlr9nc=\n\
+=LDtT\n\
+-----END PGP SIGNATURE-----\n\
 ";
    test.assertEqual(pgp.incoming({
                            content: msg,
                            dests: ["test@example.org"],
                            attachments: [],
                         }, "joe@foo.bar"),
-                     "Hello, World !",
+                     "Hello, World !\n",
          "Unable to validate valid signature");
+   test.assertEqual(pgp.incoming({
+                           content: tampered_msg,
+                           dests: ["test@example.org"],
+                           attachments: [],
+                        }, "joe@foo.bar"),
+                     null,
+         "Unable to invalidate invalid signature");
 
    // Check sending to at least one unknown dest => should clearsign
    var clear = "I'm there !";
@@ -72,7 +96,7 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\
       dests: ["joe@foo.bar", "unknown@somewhere.org"],
       attachments: []
    });
-   test.assertEqual(cipher.indexOf(clear), -1,
+   test.assertNotEqual(cipher.indexOf(clear), -1,
          "Sending to unknown dest encrypted");
 
    // Check sending to only known dests => should encrypt
@@ -90,6 +114,6 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\
       dests: ["joe@foo.bar", "joe@bar.foo"],
       attachments: []
    });
-   test.assertEqual(deciphered, clear,
+   test.assertEqual(deciphered, clear + " ",
          "Deciphering didn't give the exact same message");
 }))
