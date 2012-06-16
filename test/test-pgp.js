@@ -24,14 +24,18 @@ function nogpg(func) {
 
 exports.test_all = checked(nogpg(function(test) {
    // Install
-   pgp.install("Some Test User", "non existing", "test@example.org");
+   pgp.install({ name: "Some Test User",
+                 comment: "non existing",
+                 email: "test@example.org" });
 
    // Check identity
    test.assertEqual(pgp.identity(), pgp.identity(),
       "pgp.identity() not stable");
 
    // Check handshake
-   pgp.handshake("75DC9CAAAFFB3F629E315F5936621BE556D9F845");
+   pgp.handshake("75DC9CAAAFFB3F629E315F5936621BE556D9F845",
+                 function(emails) { return true; },
+                 { trust: 0, depth: 0 });
       // Random key generated for this usage
    
    // Check knows
