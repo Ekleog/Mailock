@@ -34,13 +34,3 @@ exports.test_reset = function(test) {
    prefs.reset("reset");
    test.assertUndefined(prefs.get("reset"));
 }
-
-exports.test_getLocalized = function(test) {
-   // TODO: Fill in, understand
-   test.pass();
-}
-
-exports.test_setLocalized = function(test) {
-   // TODO: Fill in, understand
-   test.pass();
-}
