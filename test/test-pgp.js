@@ -86,6 +86,13 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
                      "Hello, World !\n",
          "Unable to validate valid signature");
    test.assertEqual(pgp.incoming({
+                           content: msg,
+                           dests: ["test@example.org"],
+                           attachments: [],
+                        }, "joe@bar.foo"),
+                     "Hello, World !\n",
+         "Unable to validate valid signature");
+   test.assertEqual(pgp.incoming({
                            content: tampered_msg,
                            dests: ["test@example.org"],
                            attachments: [],
