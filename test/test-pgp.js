@@ -96,33 +96,33 @@ l/UR06pPWdx3wjt/vaCSEZA87oQeY0X+I9n4iS8qwAD35QTwjoFGLelh7IUJ940=\n\
 =5gJM\n\
 -----END PGP SIGNATURE-----\n\
 ";
-   test.assertEqual(pgp.incoming({
+   test.assertEqual(JSON.stringify(pgp.incoming({
                            content: msg,
                            dests: ["test@example.org"],
                            attachments: [],
-                        }, "joe@foo.bar"),
-                     "Hello, World !\n",
+                        }, "joe@foo.bar")),
+                     JSON.stringify({ msg: "Hello, World !\n", ok: true }),
          "Unable to validate valid signature");
-   test.assertEqual(pgp.incoming({
+   test.assertEqual(JSON.stringify(pgp.incoming({
                            content: msg,
                            dests: ["test@example.org"],
                            attachments: [],
-                        }, "joe@bar.foo"),
-                     "Hello, World !\n",
+                        }, "joe@bar.foo")),
+                     JSON.stringify({ msg: "Hello, World !\n", ok: true }),
          "Unable to validate valid signature");
-   test.assertEqual(pgp.incoming({
+   test.assertEqual(JSON.stringify(pgp.incoming({
                            content: tampered_msg,
                            dests: ["test@example.org"],
                            attachments: [],
-                        }, "joe@foo.bar"),
-                     null,
+                        }, "joe@foo.bar")),
+                     JSON.stringify({ msg: "Hella, World !\n", ok: false }),
          "Unable to invalidate invalid signature");
-   test.assertEqual(pgp.incoming({
+   test.assertEqual(JSON.stringify(pgp.incoming({
                            content: unknown_msg,
                            dests: ["test@example.org"],
                            attachments: [],
-                        }, "unknown@somewhere.org"),
-                     null,
+                        }, "unknown@somewhere.org")),
+                     JSON.stringify({ msg: "Hello, World !\n", ok: false }),
          "Unable to invalidate signature from unknown user");
 
    // Check sending to at least one unknown dest => should clearsign
@@ -150,6 +150,7 @@ l/UR06pPWdx3wjt/vaCSEZA87oQeY0X+I9n4iS8qwAD35QTwjoFGLelh7IUJ940=\n\
       dests: ["joe@foo.bar", "joe@bar.foo"],
       attachments: []
    }, "test@example.org");
-   test.assertEqual(deciphered, clear + " ",
+   test.assertEqual(JSON.stringify(deciphered),
+                    JSON.stringify({ msg: clear + " ", ok: true }),
          "Deciphering didn't give the exact same message");
 }))
