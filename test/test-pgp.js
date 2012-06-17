@@ -41,6 +41,7 @@ exports.test_all = checked(nogpg(function(test) {
    // Check knows
    test.assert(pgp.knows("joe@foo.bar"));
    test.assert(pgp.knows("joe@bar.foo"));
+   test.assert(!pgp.knows("unknown@somewhere.org"));
 
    // Check incoming (for signed messages, I just can't encrypt to an
    // unknown key)
@@ -78,6 +79,23 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
 =LDtT\n\
 -----END PGP SIGNATURE-----\n\
 ";
+   let unknown_msg = "\
+-----BEGIN PGP SIGNED MESSAGE-----\n\
+Hash: SHA1\n\
+\n\
+Hello, World !\n\
+-----BEGIN PGP SIGNATURE-----\n\
+Version: GnuPG v2.0.19 (GNU/Linux)\n\
+\n\
+iQEcBAEBAgAGBQJP3c6AAAoJENFpM6FZLSCrh48IAIVa1LZ7a2O+eil4SQuqn3LH\n\
+moUVxG9q/1g/6NDiHeOqkd0uXoaW9C2ViaLnVE2389xvekO79XgtB9a/ObBfLpCy\n\
+9q1Ey8OnAeG6DUmwpFPu55ltYsNW82rw8kwZEB1N02uQZk+WmMePF+RL4rnQeHyR\n\
+PJfDvKdljiOd8Nc0t4aUoDkNJrTk+GaZ1+mUYPSeSybENhH+Wr1fdaYiGkjs0I31\n\
+4oMvNLLm7X4hcQ+dJCrYxXnQPMPzNBG0JCN/hpPiUjl8x1CQnVuGe7O4w6Qivngt\n\
+l/UR06pPWdx3wjt/vaCSEZA87oQeY0X+I9n4iS8qwAD35QTwjoFGLelh7IUJ940=\n\
+=5gJM\n\
+-----END PGP SIGNATURE-----\n\
+";
    test.assertEqual(pgp.incoming({
                            content: msg,
                            dests: ["test@example.org"],
@@ -99,6 +117,13 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
                         }, "joe@foo.bar"),
                      null,
          "Unable to invalidate invalid signature");
+   test.assertEqual(pgp.incoming({
+                           content: unknown_msg,
+                           dests: ["test@example.org"],
+                           attachments: [],
+                        }, "unknown@somewhere.org"),
+                     null,
+         "Unable to invalidate signature from unknown user");
 
    // Check sending to at least one unknown dest => should clearsign
    let clear = "I'm there !";
@@ -124,7 +149,7 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
       content: cipher,
       dests: ["joe@foo.bar", "joe@bar.foo"],
       attachments: []
-   });
+   }, "test@example.org");
    test.assertEqual(deciphered, clear + " ",
          "Deciphering didn't give the exact same message");
 }))
