@@ -44,7 +44,7 @@ exports.test_all = checked(nogpg(function(test) {
 
    // Check incoming (for signed messages, I just can't encrypt to an
    // unknown key)
-   var msg = "\
+   let msg = "\
 -----BEGIN PGP SIGNED MESSAGE-----\n\
 Hash: SHA1\n\
 \n\
@@ -61,7 +61,7 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
 =LDtT\n\
 -----END PGP SIGNATURE-----\n\
 ";
-   var tampered_msg = "\
+   let tampered_msg = "\
 -----BEGIN PGP SIGNED MESSAGE-----\n\
 Hash: SHA1\n\
 \n\
@@ -94,8 +94,8 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
          "Unable to invalidate invalid signature");
 
    // Check sending to at least one unknown dest => should clearsign
-   var clear = "I'm there !";
-   var cipher = pgp.outgoing({
+   let clear = "I'm there !";
+   let cipher = pgp.outgoing({
       content: clear,
       dests: ["joe@foo.bar", "unknown@somewhere.org"],
       attachments: []
@@ -113,7 +113,7 @@ OVSCpqfikblZTt07QKfcv2Ve6Xg8cJHBRM2rza3RGFH8f9Ny18c1tJveusQ9w1P+\n\
          "Cleartext appearing in ciphered message");
 
    // Check decrypting (we should always encrypt to ourselves)
-   var deciphered = pgp.incoming({
+   let deciphered = pgp.incoming({
       content: cipher,
       dests: ["joe@foo.bar", "joe@bar.foo"],
       attachments: []

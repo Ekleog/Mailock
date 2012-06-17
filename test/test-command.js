@@ -20,14 +20,14 @@ function checked(func) {
 }
 
 exports.test_run = checked(function(test) {
-   var filename = mktemp("test-command-run");
+   let filename = mktemp("test-command-run");
    command.run("/usr/bin/touch", filename);
    test.assert(file.exists(filename), "Command not being executed");
    file.remove(filename);
 })
 
 exports.test_runAsync = checked(function(test) {
-   var filename = mktemp("test-command-runAsync");
+   let filename = mktemp("test-command-runAsync");
    command.runAsync("touch", [filename], function() {
       test.assert(file.exists(filename),
                   "Command not being asynchronously executed");

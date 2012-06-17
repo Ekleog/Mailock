@@ -5,7 +5,7 @@ exports.test_mktemp_unnamed = function(test) {
    if (!os.getOS() == "Linux")
       test.fail("Able to test mktemp only on Linux ATM");
    else {
-      var temp1 = mktemp(), temp2 = mktemp();
+      let temp1 = mktemp(), temp2 = mktemp();
       test.assertEqual(temp1.substr(0, 13), "/tmp/mailock-",
             "Temp should start with \"/tmp/mailock-\"")
       test.assertEqual(temp2.substr(0, 13), "/tmp/mailock-",
@@ -19,7 +19,7 @@ exports.test_mktemp_named = function(test) {
    if (!os.getOS() == "Linux")
       test.fail("Able to test mktemp only on Linux ATM");
    else {
-      var hello1 = mktemp("hello"), hello2 = mktemp("hello");
+      let hello1 = mktemp("hello"), hello2 = mktemp("hello");
       test.assertEqual(hello1.substr(0, 19), "/tmp/mailock-hello-",
             "Named temp should start with \"/tmp/mailock-hello-\"")
       test.assertEqual(hello2.substr(0, 19), "/tmp/mailock-hello-",
