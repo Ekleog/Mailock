@@ -101,29 +101,36 @@ l/UR06pPWdx3wjt/vaCSEZA87oQeY0X+I9n4iS8qwAD35QTwjoFGLelh7IUJ940=\n\
                            dests: ["test@example.org"],
                            attachments: [],
                         }, "joe@foo.bar")),
-                     JSON.stringify({ msg: "Hello, World !\n", ok: true }),
+                     JSON.stringify({ msg: "Hello, World !\n", ok: "valid" }),
          "Unable to validate valid signature");
    test.assertEqual(JSON.stringify(pgp.incoming({
                            content: msg,
                            dests: ["test@example.org"],
                            attachments: [],
                         }, "joe@bar.foo")),
-                     JSON.stringify({ msg: "Hello, World !\n", ok: true }),
+                     JSON.stringify({ msg: "Hello, World !\n", ok: "valid" }),
          "Unable to validate valid signature");
    test.assertEqual(JSON.stringify(pgp.incoming({
                            content: tampered_msg,
                            dests: ["test@example.org"],
                            attachments: [],
                         }, "joe@foo.bar")),
-                     JSON.stringify({ msg: "Hella, World !\n", ok: false }),
+                     JSON.stringify({ msg: "Hella, World !\n", ok: "invalid" }),
          "Unable to invalidate invalid signature");
    test.assertEqual(JSON.stringify(pgp.incoming({
                            content: unknown_msg,
                            dests: ["test@example.org"],
                            attachments: [],
                         }, "unknown@somewhere.org")),
-                     JSON.stringify({ msg: "Hello, World !\n", ok: false }),
+                     JSON.stringify({ msg: "Hello, World !\n", ok: "unknown" }),
          "Unable to invalidate signature from unknown user");
+   test.assertEqual(JSON.stringify(pgp.incoming({
+                           content: "Hello, World !\n",
+                           dests: ["test@example.org"],
+                           attachments: [],
+                        }, "joe@foo.bar")),
+                     JSON.stringify({ msg: "Hello, World !\n", ok: "none" }),
+         "Unable to invalidate unexisting signature");
 
    // Check sending to at least one unknown dest => should clearsign
    let clear = "I'm there !";
