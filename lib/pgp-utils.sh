@@ -24,7 +24,7 @@ function all_peers {
          then
             echo "$serv" >&2
             echo "$serv"
-            all_peers "$serv"
+            all_peers "$serv" #&
          fi
       fi
    done
