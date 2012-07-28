@@ -1,5 +1,6 @@
 const gpgme = require("gpgme/low");
 const libc = require("gpgme/libc");
+const file = require("file");
 
 // {{{ 2
 exports.test_check_version = function(test) {
@@ -157,12 +158,15 @@ exports.test_data_rws = function(test) {
 }
 
 exports.test_data_file = function(test) {
-   // TODO: echo 'helloworld' > /tmp/Mailock-test
    // TODO: Make this test work on windows
+   let f = file.open("/tmp/Mailock-test", "w");
+   f.write("helloworld");
+   f.close();
+
    let ret = gpgme.data_new_from_file("/tmp/Mailock-test");
    test.assertEqual(ret.ret, gpgme.err.code.NO_ERROR);
    let data = ret.res;
-   test.assertEqual(ab2str(gpgme.data_read(data, 64)), "helloworld\n");
+   test.assertEqual(ab2str(gpgme.data_read(data, 64)), "helloworld");
    gpgme.data_release(data);
 
    ret = gpgme.data_new_from_filepart("/tmp/Mailock-test", 5, 3);
@@ -170,6 +174,8 @@ exports.test_data_file = function(test) {
    data = ret.res;
    test.assertEqual(ab2str(gpgme.data_read(data, 64)), "wor");
    gpgme.data_release(data);
+
+   file.remove("/tmp/Mailock-test");
 }
 
 exports.test_data_filename = function(test) {
