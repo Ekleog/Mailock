@@ -101,3 +101,32 @@ exports.test_errors = function(test) {
       test.assertEqual(gpgme.strerror (tst[i]), ans[i][1]);
    }
 }
+
+exports.test_strab = function(test) {
+   let buf = gpgme.str2ab("Hello, World !");
+   test.assertEqual(gpgme.ab2str(buf), "Hello, World !");
+}
+
+const str2ab = gpgme.str2ab;
+const ab2str = gpgme.ab2str;
+
+exports.test_data_mem = function(test) {
+   let data = gpgme.data_new_from_mem(str2ab("Hello, World !"));
+   test.assertEqual(data.ret, gpgme.err.code.NO_ERROR);
+   let buf = gpgme.data_release_and_get_mem(data.res);
+   test.assertEqual(ab2str(buf), "Hello, World !");
+}
+
+exports.test_data_rws = function(test) {
+   let ret = gpgme.data_new();
+   test.assertEqual(ret.ret, gpgme.err.code.NO_ERROR);
+   let data = ret.res;
+   test.assertEqual(gpgme.data_write(data, str2ab("42")), 2);
+   test.assertEqual(gpgme.data_write(data, str2ab(" 42... !")), 8);
+   test.assertEqual(gpgme.data_seek(data, 0, gpgme.SEEK_SET), 0);
+   test.assertEqual(ab2str(gpgme.data_read(data, 8)), "42 42...");
+   test.assertEqual(gpgme.data_seek(data, -5, gpgme.SEEK_CUR), 3);
+   test.assertEqual(ab2str(gpgme.data_read(data, 7)), "42... !");
+   test.assertEqual(gpgme.data_seek(data, 3, gpgme.SEEK_SET), 3);
+   test.assertEqual(ab2str(gpgme.data_read(data, 3)), "42.");
+}
