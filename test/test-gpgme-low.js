@@ -1,10 +1,12 @@
 const gpgme = require("gpgme/low");
 const libc = require("gpgme/libc");
 
+// {{{ 2
 exports.test_check_version = function(test) {
    test.assertEqual(gpgme.check_version(), "1.3.1");
 }
-
+// }}}
+// {{{ 3
 exports.test_protocol_name = function(test) {
    test.assertEqual(gpgme.get_protocol_name(gpgme.protocol.OpenPGP), "OpenPGP");
    test.assertEqual(gpgme.get_protocol_name(gpgme.protocol.CMS),     "CMS"    );
@@ -28,6 +30,11 @@ function check_engine_info(test, info, file, home) {
    test.assertEqual(info.home_dir   , home);
    //test.assertEqual(info.version    , "2.0.19"); // Useless to check this
    test.assertEqual(info.req_version, "1.4.0");
+
+   test.assertEqual(info.next.protocol, gpgme.protocol.CMS);
+   test.assertEqual(info.next.next.protocol, gpgme.protocol.GPGCONF);
+   test.assertEqual(info.next.next.next.protocol, gpgme.protocol.ASSUAN);
+   test.assertEqual(info.next.next.next.next, null);
 }
 
 exports.test_engine_info = function(test) {
@@ -52,7 +59,8 @@ exports.test_engine_info = function(test) {
    );
    check_get_engine_info("/usr/bin/gpg", null);
 }
-
+// }}}
+// {{{ 4
 exports.test_algo_names = function(test) {
    test.assertEqual(gpgme.pubkey_algo_name(gpgme.pk.RSA), "RSA");
    test.assertEqual(gpgme.pubkey_algo_name(gpgme.pk.RSA_E), "RSA-E");
@@ -80,7 +88,8 @@ exports.test_algo_names = function(test) {
    test.assertEqual(gpgme.hash_algo_name(gpgme.md.CRC24_RFC2440),
                                                                 "CRC24RFC2440");
 }
-
+// }}}
+// {{{ 5
 exports.test_errors = function(test) {
    test.assertNotEqual(libc.setlocale(libc.lc.ALL, "C"), null);
    let tst = [
@@ -90,7 +99,7 @@ exports.test_errors = function(test) {
       gpgme.error_from_errno(84), // ILSEQ
       gpgme.err_code_from_errno(34) // ERANGE
    ];
-   test.assertEqual(gpgme.err_code_to_errno(tst[4]), 34);
+
    let ans = [
       ["Pinentry",           "Keyserver error"],
       ["Unspecified source", "Invalid passphrase"],
@@ -103,11 +112,18 @@ exports.test_errors = function(test) {
       test.assertEqual(gpgme.strsource(tst[i]), ans[i][0]);
       test.assertEqual(gpgme.strerror (tst[i]), ans[i][1]);
    }
-}
 
+   test.assertEqual(gpgme.err_code(tst[0]), gpgme.err.code.KEYSERVER);
+   test.assertEqual(gpgme.err_source(tst[0]), gpgme.err.source.PINENTRY);
+   test.assertEqual(gpgme.err_code_to_errno(tst[4]), 34);
+}
+// }}}
+// {{{ 6
 exports.test_strab = function(test) {
    let buf = gpgme.str2ab("Hello, World !");
    test.assertEqual(gpgme.ab2str(buf), "Hello, World !");
+
+   test.assertEqual(gpgme.ab2str(gpgme.str2ab("")), "");
 }
 
 const str2ab = gpgme.str2ab;
@@ -126,12 +142,17 @@ exports.test_data_rws = function(test) {
    let data = ret.res;
    test.assertEqual(gpgme.data_write(data, str2ab("42")), 2);
    test.assertEqual(gpgme.data_write(data, str2ab(" 42... !")), 8);
-   test.assertEqual(gpgme.data_seek(data, 0, gpgme.SEEK_SET), 0);
+   test.assertEqual(gpgme.data_seek(data, 0, gpgme.seek.SET), 0);
    test.assertEqual(ab2str(gpgme.data_read(data, 8)), "42 42...");
-   test.assertEqual(gpgme.data_seek(data, -5, gpgme.SEEK_CUR), 3);
+   test.assertEqual(gpgme.data_seek(data, -5, gpgme.seek.CUR), 3);
    test.assertEqual(ab2str(gpgme.data_read(data, 7)), "42... !");
-   test.assertEqual(gpgme.data_seek(data, 3, gpgme.SEEK_SET), 3);
+   test.assertEqual(gpgme.data_seek(data, 3, gpgme.seek.SET), 3);
    test.assertEqual(ab2str(gpgme.data_read(data, 3)), "42.");
+   test.assertEqual(gpgme.data_write(data, str2ab(" :-D")), 4);
+   // TODO: Re-enable and disable following line (upstream bug report sent)
+   //test.assertEqual(gpgme.data_seek(data, -7, gpgme.seek.END), 3);
+   test.assertEqual(gpgme.data_seek(data, 3, gpgme.seek.SET), 3);
+   test.assertEqual(ab2str(gpgme.data_read(data, 64)), "42. :-D");
    gpgme.data_release(data);
 }
 
@@ -171,7 +192,7 @@ exports.test_data_encoding = function(test) {
    test.assertEqual(gpgme.data_get_encoding(data), gpgme.data_encoding.BASE64);
    gpgme.data_release(data);
 }
-
+// }}}
 exports.test_ctx_conf = function(test) {
    let ret = gpgme.new();
    test.assertEqual(ret.ret, gpgme.err.code.NO_ERROR);
