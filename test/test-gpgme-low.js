@@ -22,16 +22,19 @@ exports.test_engine_check_version = function(test) {
                     gpgme.err.code.NO_ERROR);
 }
 
+function check_engine_info(test, info, file, home) {
+   test.assertEqual(info.protocol   , gpgme.protocol.OpenPGP);
+   test.assertEqual(info.file_name  , file);
+   test.assertEqual(info.home_dir   , home);
+   //test.assertEqual(info.version    , "2.0.19"); // Useless to check this
+   test.assertEqual(info.req_version, "1.4.0");
+}
+
 exports.test_engine_info = function(test) {
    function check_get_engine_info(file, home) {
       let ret = gpgme.get_engine_info();
       test.assertEqual(ret.ret, gpgme.err.code.NO_ERROR);
-
-      test.assertEqual(ret.res.protocol   , gpgme.protocol.OpenPGP);
-      test.assertEqual(ret.res.file_name  , file);
-      test.assertEqual(ret.res.home_dir   , home);
-      //test.assertEqual(ret.res.version    , "2.0.19");// Useless to check this
-      test.assertEqual(ret.res.req_version, "1.4.0");
+      check_engine_info(test, ret.res, file, home);
    }
 
    // TODO: Adapt for windows
@@ -167,4 +170,67 @@ exports.test_data_encoding = function(test) {
                     gpgme.err.code.NO_ERROR);
    test.assertEqual(gpgme.data_get_encoding(data), gpgme.data_encoding.BASE64);
    gpgme.data_release(data);
+}
+
+exports.test_ctx_conf = function(test) {
+   let ret = gpgme.new();
+   test.assertEqual(ret.ret, gpgme.err.code.NO_ERROR);
+   let ctx = ret.res;
+
+   test.assertEqual(gpgme.get_protocol(ctx), gpgme.protocol.OpenPGP);
+   test.assertEqual(gpgme.set_protocol(ctx, gpgme.protocol.CMS),
+                    gpgme.err.code.NO_ERROR);
+   test.assertEqual(gpgme.get_protocol(ctx), gpgme.protocol.CMS);
+
+   function check_get_engine_info(file, home) {
+      check_engine_info(test, gpgme.ctx_get_engine_info(ctx), file, home);
+   }
+
+   // TODO: Adapt for windows
+   check_get_engine_info("/usr/bin/gpg", null);
+   test.assertEqual(
+      gpgme.ctx_set_engine_info(ctx, gpgme.protocol.OpenPGP,
+                                "my_gpg2", "my_home"),
+      gpgme.err.code.NO_ERROR
+   );
+   check_get_engine_info("my_gpg2", "my_home");
+   test.assertEqual(
+      gpgme.ctx_set_engine_info(ctx, gpgme.protocol.OpenPGP,
+                                "/usr/bin/gpg", null),
+      gpgme.err.code.NO_ERROR
+   );
+   check_get_engine_info("/usr/bin/gpg", null);
+
+   test.assertEqual(gpgme.get_armor(ctx), false);
+   gpgme.set_armor(ctx, true);
+   test.assertEqual(gpgme.get_armor(ctx), true);
+
+   test.assertEqual(gpgme.get_textmode(ctx), false);
+   gpgme.set_textmode(ctx, true);
+   test.assertEqual(gpgme.get_textmode(ctx), true);
+
+   test.assertEqual(gpgme.get_include_certs(ctx), gpgme.INCLUDE_CERTS_DEFAULT);
+   gpgme.set_include_certs(ctx, 42);
+   test.assertEqual(gpgme.get_include_certs(ctx), 42);
+
+   let mode = gpgme.get_keylist_mode(ctx);
+   test.assertEqual(mode, 1);
+   test.assertEqual(
+      gpgme.set_keylist_mode(
+         ctx,
+         (mode | gpgme.keylist_mode.EXTERN) & ~gpgme.keylist_mode.LOCAL
+      ),
+      gpgme.err.code.NO_ERROR
+   );
+   test.assertEqual(
+      gpgme.get_keylist_mode(ctx),
+      (mode | gpgme.keylist_mode.EXTERN) & ~gpgme.keylist_mode.LOCAL
+   );
+
+   test.assertEqual(
+      gpgme.set_locale(ctx, gpgme.lc.ALL, "en_GB"),
+      gpgme.err.code.NO_ERROR
+   );
+
+   gpgme.release(ctx);
 }
