@@ -199,6 +199,7 @@ exports.test_data_encoding = function(test) {
    gpgme.data_release(data);
 }
 // }}}
+// {{{ 7
 exports.test_ctx_conf = function(test) {
    let ret = gpgme.new();
    test.assertEqual(ret.ret, gpgme.err.code.NO_ERROR);
@@ -236,12 +237,12 @@ exports.test_ctx_conf = function(test) {
    gpgme.set_textmode(ctx, true);
    test.assertEqual(gpgme.get_textmode(ctx), true);
 
-   test.assertEqual(gpgme.get_include_certs(ctx), gpgme.INCLUDE_CERTS_DEFAULT);
+   test.assertEqual(gpgme.get_include_certs(ctx), gpgme.include_certs.DEFAULT);
    gpgme.set_include_certs(ctx, 42);
    test.assertEqual(gpgme.get_include_certs(ctx), 42);
 
    let mode = gpgme.get_keylist_mode(ctx);
-   test.assertEqual(mode, 1);
+   test.assertEqual(mode, gpgme.keylist_mode.LOCAL);
    test.assertEqual(
       gpgme.set_keylist_mode(
          ctx,
@@ -261,3 +262,4 @@ exports.test_ctx_conf = function(test) {
 
    gpgme.release(ctx);
 }
+// }}}
