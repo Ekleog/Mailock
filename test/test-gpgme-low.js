@@ -130,3 +130,15 @@ exports.test_data_rws = function(test) {
    test.assertEqual(gpgme.data_seek(data, 3, gpgme.SEEK_SET), 3);
    test.assertEqual(ab2str(gpgme.data_read(data, 3)), "42.");
 }
+
+exports.test_data_file = function(test) {
+   // TODO: echo 'helloworld' > /tmp/Mailock-test
+   // TODO: Make this test work on windows
+   let data = gpgme.data_new_from_file("/tmp/Mailock-test");
+   test.assertEqual(data.ret, gpgme.err.code.NO_ERROR);
+   test.assertEqual(ab2str(gpgme.data_read(data.res, 64)), "helloworld\n");
+
+   data = gpgme.data_new_from_filepart("/tmp/Mailock-test", 5, 3);
+   test.assertEqual(data.ret, gpgme.err.code.NO_ERROR);
+   test.assertEqual(ab2str(gpgme.data_read(data.res, 64)), "wor");
+}
