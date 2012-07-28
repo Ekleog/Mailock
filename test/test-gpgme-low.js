@@ -1,4 +1,5 @@
 const gpgme = require("gpgme/low");
+const libc = require("gpgme/libc");
 
 exports.test_check_version = function(test) {
    test.assertEqual(gpgme.check_version(), "1.3.1");
@@ -75,4 +76,28 @@ exports.test_algo_names = function(test) {
                                                                 "CRC32RFC1510");
    test.assertEqual(gpgme.hash_algo_name(gpgme.md.CRC24_RFC2440),
                                                                 "CRC24RFC2440");
+}
+
+exports.test_errors = function(test) {
+   test.assertNotEqual(libc.setlocale(libc.lc.ALL, "C"), null);
+   let tst = [
+      gpgme.err_make(gpgme.err.source.PINENTRY, gpgme.err.code.KEYSERVER),
+      gpgme.error(gpgme.err.code.INV_PASSPHRASE),
+      gpgme.err_make_from_errno(gpgme.err.source.KEYBOX, 33), // EDOM
+      gpgme.error_from_errno(84), // ILSEQ
+      gpgme.err_code_from_errno(34) // ERANGE
+   ];
+   test.assertEqual(gpgme.err_code_to_errno(tst[4]), 34);
+   let ans = [
+      ["Pinentry",           "Keyserver error"],
+      ["Unspecified source", "Invalid passphrase"],
+      ["Keybox",             "Numerical argument out of domain"],
+      ["User defined source 1",
+                           "Invalid or incomplete multibyte or wide character"],
+      ["Unspecified source", "Numerical result out of range"]
+   ];
+   for (let i = 0 ; i < 5 ; ++i) {
+      test.assertEqual(gpgme.strsource(tst[i]), ans[i][0]);
+      test.assertEqual(gpgme.strerror (tst[i]), ans[i][1]);
+   }
 }
